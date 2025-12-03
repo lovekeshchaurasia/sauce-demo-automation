@@ -1,100 +1,74 @@
 
-// import { test, expect } from '@playwright/test';
-
-// test('Checkout: empty cart, error handling, invalid data, successful finish', async ({ page }) => {
-//   // 1. Login
-//   await page.goto('https://www.saucedemo.com/');
-//   await page.fill('#user-name', 'standard_user');
-//   await page.fill('#password', 'secret_sauce');
-//   await page.click('#login-button');
-
-//   // 2. Go to cart without adding any product
-//   await page.click('.shopping_cart_link');
-
-//   // Check empty cart scenario
-//   const cartItems = page.locator('.cart_item');
-//   await expect(cartItems).toHaveCount(0);
-
-//   // Try checkout with empty cart
-//   await page.click('#checkout');
-
-//   // 3. Validate error handling for empty fields
-//   await page.click('#continue');
-//   const errorMsg = page.locator('[data-test="error"]');
-//   await expect(errorMsg).toHaveText('Error: First Name is required');
-
-//   // Fill only first name
-//   await page.fill('#first-name', 'Test');
-//   await page.click('#continue');
-//   await expect(errorMsg).toHaveText('Error: Last Name is required');
-
-//   // Fill first and last name, leave postal empty
-//   await page.fill('#last-name', 'User');
-//   await page.click('#continue');
-//   await expect(errorMsg).toHaveText('Error: Postal Code is required');
-
-//   // 4. Fill valid shipping info
-//   await page.fill('#postal-code', '12345');
-//   await page.click('#continue');
-
-//   //  Validate summary page loads
-//   await expect(page.locator('.summary_info')).toBeVisible();
-
-//   // 5. Finish checkout
-//   await page.click('#finish');
-
-//   //  Validate order confirmation
-//   const confirmationHeader = page.locator('.complete-header');
-//   await expect(confirmationHeader).toHaveText('Thank you for your order!');
-
-//   const confirmationText = page.locator('.complete-text');
-//   await expect(confirmationText).toContainText('Your order has been dispatched, and will arrive just as fast as the pony can get there!');
-
-//   await page.waitForTimeout(3000);
-// });
-
-
-
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { CartPage } from '../pages/cartPage';
 import { CheckoutPage } from '../pages/checkoutPage';
 
-test('Checkout: empty cart, error handling, invalid data, successful finish', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  const cartPage = new CartPage(page);
-  const checkoutPage = new CheckoutPage(page);
+test.describe('Checkout Tests', () => {
+  let loginPage;
+  let cartPage;
+  let checkoutPage;
 
-  // 1. Login
-  await loginPage.goto();
-  await loginPage.login('standard_user', 'secret_sauce');
+  test.beforeEach(async ({ page }) => {
+    loginPage = new LoginPage(page);
+    cartPage = new CartPage(page);
+    checkoutPage = new CheckoutPage(page);
 
-  // 2. Go to cart without adding any product
-  await page.click('.shopping_cart_link');
-  await cartPage.expectEmptyCart();
+    // Login before each test
+    await loginPage.goto();
+    await loginPage.login('standard_user', 'secret_sauce');
 
-  // Try checkout with empty cart
-  await checkoutPage.startCheckout();
+    // Navigate to cart page
+    await page.click('.shopping_cart_link');
+  });
 
-  // 3. Validate error handling for empty fields
-  await checkoutPage.clickContinue();
-  await checkoutPage.expectError('Error: First Name is required');
+  //Test 1: Start checkout with empty cart
+  test('Start checkout with empty cart', async ({ page }) => {
+    await cartPage.expectEmptyCart();
+    await checkoutPage.startCheckout();
+    await expect(page.locator('#continue')).toBeVisible();
+  });
 
-  await page.fill('#first-name', 'Test');
-  await checkoutPage.clickContinue();
-  await checkoutPage.expectError('Error: Last Name is required');
+  //Test 2: Error handling for empty fields
+  test('Validate error handling for empty fields', async ({ page }) => {
+    await checkoutPage.startCheckout();
+    await checkoutPage.clickContinue();
+    await checkoutPage.expectError('Error: First Name is required');
+  });
 
-  await page.fill('#last-name', 'User');
-  await checkoutPage.clickContinue();
-  await checkoutPage.expectError('Error: Postal Code is required');
+  //Test 3: Fill shipping with invalid/empty data
+  test('Validate error handling for partial data', async ({ page }) => {
+    await checkoutPage.startCheckout();
 
-  // 4. Fill valid shipping info
-  await checkoutPage.fillDetails('Test', 'User', '12345');
-  await checkoutPage.expectSummaryVisible();
+    // Fill only first name
+    await page.fill('#first-name', 'Test');
+    await checkoutPage.clickContinue();
+    await checkoutPage.expectError('Error: Last Name is required');
 
-  // 5. Finish checkout
-  await checkoutPage.finishOrder();
-  await checkoutPage.expectOrderConfirmation();
+    // Fill first and last name, leave postal empty
+    await page.fill('#last-name', 'User');
+    await checkoutPage.clickContinue();
+    await checkoutPage.expectError('Error: Postal Code is required');
+  });
 
-  await page.waitForTimeout(3000);
+  //Test 4: Successful finish after valid data
+  test('Complete checkout successfully', async ({ page }) => {
+    await checkoutPage.startCheckout();
+    await checkoutPage.fillDetails('Test', 'User', '12345');
+    await checkoutPage.expectSummaryVisible();
+    await checkoutPage.finishOrder();
+    await checkoutPage.expectOrderConfirmation();
+  });
+
+  //Test 5: Validate order confirmation content
+  test('Validate order confirmation content', async ({ page }) => {
+    await checkoutPage.startCheckout();
+    await checkoutPage.fillDetails('Test', 'User', '12345');
+    await checkoutPage.finishOrder();
+    await checkoutPage.expectOrderConfirmation();
+
+    const confirmationText = await page.locator('.complete-text').textContent();
+    expect(confirmationText).toContain('Your order has been dispatched');
+    console.log('Order Confirmation:', confirmationText);
+  });
 });

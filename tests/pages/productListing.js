@@ -1,14 +1,36 @@
-
+import { expect } from '@playwright/test';
 export class productListing {
   constructor(page) {
     this.page = page;
     this.inventoryList = page.locator('.inventory_list');
     this.inventoryItems = page.locator('.inventory_item');
     this.sortDropdown = page.locator('[data-test="product-sort-container"]');
+    
+    this.productBackpack = page.locator('button[data-test="add-to-cart-sauce-labs-backpack"]');
+    this.productBikeLight = page.locator('button[data-test="add-to-cart-sauce-labs-bike-light"]');
+    this.cartBadge = page.locator('.shopping_cart_badge');
+    this.cartLink = page.locator('.shopping_cart_link');
+
   }
 
   async gotoInventory() {
     await this.page.goto('https://www.saucedemo.com/inventory.html');
+  }
+
+async addBackpack() {
+    await this.productBackpack.click();
+  }
+
+async goToCart() {
+    await this.cartLink.click();
+  }
+
+  async addBikeLight() {
+    await this.productBikeLight.click();
+  }
+
+  async expectCartBadge(count) {
+    await expect(this.cartBadge).toHaveText(String(count));
   }
 
   async getProductCount() {

@@ -47,41 +47,96 @@
 
 
 
+// import { test, expect } from '@playwright/test';
+// import { LoginPage } from '../pages/LoginPage';
+// import { ProductDetailsPage } from '../pages/productDetailsPage';
+
+// test.describe('Product Details Tests', () => {
+//   test('Validate first product details', async ({ page }) => {
+//     const loginPage = new LoginPage(page);
+//     const productDetailsPage = new ProductDetailsPage(page);
+
+//     // Login
+//     await loginPage.goto();
+//     await loginPage.login('standard_user', 'secret_sauce');
+
+//     // Open first product
+//     await productDetailsPage.openFirstProduct();
+
+//     // Validate product name
+//     const productName = await productDetailsPage.getProductName();
+//     expect(productName).toContain('Sauce Labs Backpack');
+//     console.log('First Product:', productName);
+
+//     // Validate description
+//     await productDetailsPage.validateDescription(
+//       'carry.allTheThings() with the sleek, streamlined Sly Pack that melds uncompromising style with unequaled laptop and tablet protection'
+//     );
+
+//     // Validate price
+//     const price = await productDetailsPage.validatePrice();
+//     console.log('Price:', price);
+
+//     // Validate Add to Cart
+//     await productDetailsPage.clickAddToCart();
+
+//     // Navigate back
+//     await productDetailsPage.navigateBack();
+//   });
+// });
+
+
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { ProductDetailsPage } from '../pages/productDetailsPage';
 
-test.describe('Product Details Tests', () => {
-  test('Validate first product details', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const productDetailsPage = new ProductDetailsPage(page);
+test.describe('Product Detail Tests', () => {
+  let loginPage;
+  let productDetailsPage;
 
-    // Login
+  test.beforeEach(async ({ page }) => {
+    loginPage = new LoginPage(page);
+    productDetailsPage = new ProductDetailsPage(page);
+
+    // Login before each test
     await loginPage.goto();
     await loginPage.login('standard_user', 'secret_sauce');
 
-    // Open first product
+    // Navigate to first product detail page
     await productDetailsPage.openFirstProduct();
+    await expect(page).toHaveURL(/inventory-item.html/);
+  });
 
-    // Validate product name
+  //Test 1: Validate product name
+  test('Validate product name', async ({ page }) => {
     const productName = await productDetailsPage.getProductName();
     expect(productName).toContain('Sauce Labs Backpack');
-    console.log('First Product:', productName);
+    console.log('Product Name:', productName);
+  });
 
-    // Validate description
+  //Test 2: Validate product description
+  test('Validate product description', async ({ page }) => {
     await productDetailsPage.validateDescription(
       'carry.allTheThings() with the sleek, streamlined Sly Pack that melds uncompromising style with unequaled laptop and tablet protection'
     );
+  });
 
-    // Validate price
+  //Test 3: Validate product price
+  test('Validate product price', async ({ page }) => {
     const price = await productDetailsPage.validatePrice();
     console.log('Price:', price);
+    expect(price).toMatch(/^\$\d+\.\d{2}$/); 
+  });
 
-    // Validate Add to Cart
+  //Test 4: Validate Add to Cart button
+  test('Validate Add to Cart functionality', async ({ page }) => {
     await productDetailsPage.clickAddToCart();
+    await expect(page.locator('.shopping_cart_badge')).toHaveText('1');
+  });
 
-    // Navigate back
+  //Test 5: Navigate back to inventory page
+  test('Navigate back to inventory page', async ({ page }) => {
     await productDetailsPage.navigateBack();
+    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
   });
 });
-

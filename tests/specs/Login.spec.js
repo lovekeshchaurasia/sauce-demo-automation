@@ -25,7 +25,27 @@ test.describe('Login Tests', () => {
     const errorText = await loginPage.getErrorMessage();
     expect(errorText).toContain('Epic sadface: Sorry, this user has been locked out');
   });
-
+  test('Username is Missing' , async({page}) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('', 'secret_sauce');
+    const errorText = await loginPage.getErrorMessage();
+    expect(errorText).toContain('Epic sadface: Username is required');
+  })
+  test('Password is Missing' , async({page}) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('standard_user', '');
+    const errorText = await loginPage.getErrorMessage();
+    expect(errorText).toContain('Epic sadface: Password is required');
+  })
+  test('Username and Password is Missing' , async({page}) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('', '');
+    const errorText = await loginPage.getErrorMessage();
+    expect(errorText).toContain('Epic sadface: Username is required');
+  })
   test('Empty Fields Validation', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();

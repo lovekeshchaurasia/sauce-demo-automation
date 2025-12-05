@@ -10,7 +10,7 @@ export class CheckoutPage {
     this.postalCodeInput = page.locator('#postal-code');
     this.continueBtn = page.locator('#continue');
     this.errorMsg = page.locator('[data-test="error"]');
-        this.subtotalLabel = page.locator('.summary_subtotal_label');
+    this.subtotalLabel = page.locator('.summary_subtotal_label');
     this.summaryInfo = page.locator('.summary_info');
     this.finishBtn = page.locator('#finish');
     this.confirmationHeader = page.locator('.complete-header');

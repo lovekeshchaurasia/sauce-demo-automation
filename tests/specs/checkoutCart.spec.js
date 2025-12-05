@@ -36,7 +36,7 @@ test.describe('Checkout Tests', () => {
     await checkoutPage.expectError('Error: First Name is required');
   });
 
-  //Test 3: Fill shipping with invalid/empty data
+  //Test 3: Error handling for partial data
   test('Validate error handling for partial data', async ({ page }) => {
     await checkoutPage.startCheckout();
 
@@ -51,7 +51,7 @@ test.describe('Checkout Tests', () => {
     await checkoutPage.expectError('Error: Postal Code is required');
   });
 
-  //Test 4: Successful finish after valid data
+  // Test 4: Successful finish after valid data
   test('Complete checkout successfully', async ({ page }) => {
     await checkoutPage.startCheckout();
     await checkoutPage.fillDetails('Test', 'User', '12345');
@@ -60,7 +60,7 @@ test.describe('Checkout Tests', () => {
     await checkoutPage.expectOrderConfirmation();
   });
 
-  //Test 5: Validate order confirmation content
+  // Test 5: Validate order confirmation content
   test('Validate order confirmation content', async ({ page }) => {
     await checkoutPage.startCheckout();
     await checkoutPage.fillDetails('Test', 'User', '12345');
